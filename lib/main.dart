@@ -1,11 +1,4 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_tflite/flutter_tflite.dart';
-import 'package:image_picker/image_picker.dart';
-
-import 'dart:developer' as devtools;
-
 import 'screen/main_screen.dart';
 
 void main() {
