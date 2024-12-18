@@ -37,7 +37,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   image_picker: ^0.8.9
   flutter_tflite: ^1.0.1
-
+  google_mobile_ads: ^4.0.0
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter

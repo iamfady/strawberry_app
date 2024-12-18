@@ -3,9 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_tflite/flutter_tflite.dart';
 import 'package:image_picker/image_picker.dart';
-
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'dart:developer' as devtools;
 
+const String testDevice = '7BDA4807AF94E43C0FA9E34CE02D2A8A';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -15,12 +16,71 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  late BannerAd _bannerAd;
+  InterstitialAd? _interstitialAd;
+
+  void _initializeAds() {
+    MobileAds.instance.initialize();
+  }
+
+  void _loadBannerAd() {
+    _bannerAd = BannerAd(
+      adUnitId: Platform.isAndroid
+          ? 'ca-app-pub-9363925547654319/2490998248' // Android  ad unit ID
+          : 'ca-app-pub-3940256099942544/2934735716', // iOS test ad unit ID
+      size: AdSize.banner,
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        // ignore: avoid_print
+        onAdLoaded: (ad) => print('Banner Ad Loaded'),
+        onAdFailedToLoad: (ad, error) {
+          // ignore: avoid_print
+          print('Banner Ad Failed to Load: $error');
+
+          ad.dispose();
+        },
+      ),
+    )..load();
+  }
+
+  void _loadInterstitialAd() {
+    InterstitialAd.load(
+      adUnitId: Platform.isAndroid
+          ? 'ca-app-pub-9363925547654319/1561231399' // Android ad unit ID
+          : 'ca-app-pub-3940256099942544/4411468910', // iOS test ad unit ID
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _interstitialAd = ad;
+          // ignore: avoid_print
+          print('Interstitial Ad Loaded');
+        },
+        onAdFailedToLoad: (error) {
+          // ignore: avoid_print
+          print('Interstitial Ad Failed to Load: $error');
+        },
+      ),
+    );
+  }
+
+  // ignore: unused_element
+  void _showInterstitialAd() {
+    if (_interstitialAd != null) {
+      _interstitialAd!.show();
+      _interstitialAd = null; // Reset after showing the ad
+    } else {
+      // ignore: avoid_print
+      print('Interstitial Ad is not ready yet.');
+    }
+  }
+
   File? filePath;
   String label = '';
   double confidence = 0.0;
 
   Future<void> _tfLteInit() async {
-    String? res = await Tflite.loadModel(
+    //String? res =
+    await Tflite.loadModel(
         model: "assets/strawberry.tflite",
         labels: "assets/labels.txt",
         numThreads: 1, // defaults to 1
@@ -98,18 +158,32 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _initializeAds();
+    _loadBannerAd();
+    _loadInterstitialAd();
+
+    _tfLteInit();
+  }
+
+  @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
+    _bannerAd.dispose();
+    _interstitialAd?.dispose();
     Tflite.close();
   }
 
   @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    _tfLteInit();
-  }
+  // void initState() {
+  //   // TODO: implement initState
+  //   super.initState();
+  //   FirebaseAdMob.instance.initialize(appId: FirebaseAdMob.testAppId);
+  //   _bannerAd = showBannerAd()..show();
+
+  //   _tfLteInit();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -118,9 +192,10 @@ class _MainScreenState extends State<MainScreen> {
         centerTitle: true,
         title: const Text("Strawberry Disease Detection"),
       ),
-      body: SingleChildScrollView(
-        child: Center(
+      body: ListView(children: [
+        Center(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
               const SizedBox(
                 height: 12,
@@ -223,10 +298,24 @@ class _MainScreenState extends State<MainScreen> {
                   "Pick from gallery",
                 ),
               ),
+             const SizedBox(
+            height: 10,
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SafeArea(
+              child: SizedBox(
+                width: _bannerAd.size.width.toDouble(),
+                height: _bannerAd.size.height.toDouble(),
+                child: AdWidget(ad: _bannerAd),
+              ),
+            ),
+          ),
+            
             ],
           ),
         ),
-      ),
+      ]),
     );
   }
 }
