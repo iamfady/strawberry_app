@@ -1,0 +1,8 @@
+Angular LeafSpot
+Anthracnose Fruit Rot
+Blossom Blight
+Gray Mold
+Healthy
+Leaf Spot
+Powdery Mildew Fruit
+Powdery Mildew Leaf

@@ -33,6 +33,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled true
     }
 
     signingConfigs {
@@ -47,15 +48,33 @@ android {
 
     buildTypes {
         release {
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
            // signingConfig = signingConfigs.debug
-            signingConfig = signingConfigs.release
+            signingConfig signingConfigs.release
+            //  signingConfig = signingConfigs.release
         }
+    }
+
+    aaptOptions {
+        noCompress 'tflite'
+        noCompress 'lite'
     }
 }
 
 
+
+dependencies {
+    implementation 'org.tensorflow:tensorflow-lite:2.11.0'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.11.0'
+    implementation 'com.android.support:multidex:2.0.1'
+    implementation "androidx.window:window:1.0.0" // Or the latest version
+    implementation "androidx.window:window:1.1.0-beta02" // For window layout features
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.12.0' // Or the latest version
+}
 
     
 
